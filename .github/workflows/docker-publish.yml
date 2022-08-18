@@ -35,4 +35,4 @@ jobs:
           [[ "${{ github.ref_name }}" == "main" ]] && TAG_NAME="latest"
 
           docker tag $IMAGE_NAME $IMAGE_ID:$TAG_NAME
-          docker push $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$TAG_NAME

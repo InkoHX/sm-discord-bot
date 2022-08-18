@@ -8,15 +8,15 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@wasmer/wasi": "^1.0.2",
-    "dayjs": "^1.11.5",
-    "discord.js": "^14.2.0",
-    "node-fetch": "^3.2.10"
+    "@wasmer/wasi": "1.0.2",
+    "dayjs": "1.11.5",
+    "discord.js": "14.2.0",
+    "node-fetch": "3.2.10"
   },
   "devDependencies": {
-    "eslint": "^8.22.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-import": "^2.26.0",
-    "prettier": "^2.7.1"
+    "eslint": "8.22.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-import": "2.26.0",
+    "prettier": "2.7.1"
   }
 }

@@ -8,7 +8,6 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@discordjs/rest": "^1.0.1",
     "@wasmer/wasi": "^1.0.2",
     "dayjs": "^1.11.5",
     "discord.js": "^14.2.0",

@@ -13,15 +13,6 @@
 (globalThis => {
   'use strict'
 
-  const whitelist = ['print', 'printErr']
-
-  // ホワイトリストに登録されているプロパティ以外をグローバルから消す
-  Object.keys(globalThis)
-    .filter(it => !whitelist.includes(it))
-    .forEach(it => {
-      delete globalThis[it]
-    })
-
   // Console
   Object.defineProperty(globalThis, 'console', {
     value: {

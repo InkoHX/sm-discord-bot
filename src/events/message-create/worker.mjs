@@ -15,7 +15,12 @@ const runtimeModule = await WebAssembly.compile(
   await fs.readFile(new URL(`./runtime/${channel}.wasm`, import.meta.url))
 )
 const wasi = new WASI({
-  args: ['-f', '/input.js'],
+  args: [
+    '-f',
+    '/input.js',
+    '--selfhosted-xdr-path=/selfhosted.bin',
+    '--selfhosted-xdr-mode=encode',
+  ],
   env: {},
 })
 

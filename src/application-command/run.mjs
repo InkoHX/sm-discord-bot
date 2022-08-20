@@ -73,13 +73,16 @@ export const execute = async interaction => {
         generateSMResultReport(result, interaction.guild?.premiumTier)
       )
     } catch (error) {
-      if (error instanceof SMTimeoutError)
-        receiveModalInteraction.followUp(
+      if (error instanceof SMTimeoutError) {
+        await receiveModalInteraction.followUp(
           generateSMResultReport({
             stdout: null,
             stderr: 'SM worker timed-out',
           })
         )
+
+        return
+      }
 
       if (
         error instanceof DiscordjsError &&

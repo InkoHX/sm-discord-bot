@@ -8,7 +8,11 @@ import {
   DiscordjsErrorCodes,
 } from 'discord.js'
 
-import { executeInSM, generateSMResultReport } from '../functions/index.mjs'
+import {
+  executeInSM,
+  generateSMResultReport,
+  SMTimeoutError,
+} from '../functions/index.mjs'
 import { releaseChannels } from '../runtime.mjs'
 
 const modal = new ModalBuilder()
@@ -54,14 +58,14 @@ export const execute = async interaction => {
   return async ({ channel }) => {
     await interaction.showModal(modal)
 
+    const receiveModalInteraction = await interaction.awaitModalSubmit({
+      time: 60 * 60 * 1000,
+      filter: interaction => interaction.customId === modal.data.custom_id,
+    })
+
+    await receiveModalInteraction.deferReply()
+
     try {
-      const receiveModalInteraction = await interaction.awaitModalSubmit({
-        time: 60 * 60 * 1000,
-        filter: interaction => interaction.customId === modal.data.custom_id,
-      })
-
-      await receiveModalInteraction.deferReply()
-
       const code = receiveModalInteraction.fields.getTextInputValue('code')
       const result = await executeInSM(code, channel)
 
@@ -69,6 +73,14 @@ export const execute = async interaction => {
         generateSMResultReport(result, interaction.guild?.premiumTier)
       )
     } catch (error) {
+      if (error instanceof SMTimeoutError)
+        receiveModalInteraction.followUp(
+          generateSMResultReport({
+            stdout: null,
+            stderr: 'SM worker timed-out',
+          })
+        )
+
       if (
         error instanceof DiscordjsError &&
         error.code === DiscordjsErrorCodes.InteractionCollectorError

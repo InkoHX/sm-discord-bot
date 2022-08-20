@@ -9,7 +9,7 @@ export const releaseChannels = {
 }
 
 export const getRuntimePath = channel =>
-  new URL(`./events/message-create/runtime/${channel}.wasm`, import.meta.url)
+  new URL(`./functions/runner/worker/runtime/${channel}.wasm`, import.meta.url)
 
 export const downloadRuntime = async channel => {
   const path = getRuntimePath(channel)

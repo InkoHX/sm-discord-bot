@@ -1,55 +1,108 @@
 import {
   ActionRowBuilder,
-  AttachmentBuilder,
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
   bold,
-  codeBlock,
+  DiscordjsError,
+  DiscordjsErrorCodes,
 } from 'discord.js'
 
-import { executeInSM, SMTimeoutError } from '../functions/index.mjs'
+import {
+  executeInSM,
+  generateSMResultReport,
+  SMTimeoutError,
+} from '../functions/index.mjs'
 import { client } from '../index.mjs'
 import { releaseChannels } from '../runtime.mjs'
-import { calcUploadSizeLimit } from '../util/message.mjs'
 
 const codeBlockRegExp = /^`{3}(?<language>[a-z]+)\n(?<code>[\s\S]+)\n`{3}$/mu
 const supportLanguages = ['js', 'javascript']
 
 /**
  * @param {import('discord.js').Message} message
- * @param {import('discord.js').ReplyMessageOptions} options
+ * @param {string} code
  */
-const sendMessage = async (message, options) => {
+const run = async (message, code) => {
   const reply = await message.reply({
-    ...options,
+    content: 'リリースチャンネルを選択してください',
     components: [
-      new ActionRowBuilder().addComponents(
+      new ActionRowBuilder().setComponents(
         new ButtonBuilder()
-          .setCustomId('delete')
+          .setCustomId('stable')
+          .setLabel('安定版')
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId('beta')
+          .setLabel('ベータ版')
+          .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId('nightly')
+          .setLabel('最新版')
           .setStyle(ButtonStyle.Danger)
-          .setEmoji('🗑️')
-          .setLabel('実行結果を削除')
       ),
     ],
   })
 
-  /** @type {import('discord.js').ButtonInteraction | null} */
-  const interaction = await reply
-    .awaitMessageComponent({
+  try {
+    const interaction = await reply.awaitMessageComponent({
       componentType: ComponentType.Button,
+      time: 30000,
       filter: interaction => interaction.user.id === message.author.id,
-      time: 60000,
     })
-    .catch(() => null)
 
-  if (!interaction) return
+    await interaction.deferReply()
 
-  await reply.delete()
-  await interaction.reply({
-    content: '実行結果を削除しました。',
-    ephemeral: true,
-  })
+    const result = await executeInSM(
+      code,
+      releaseChannels[interaction.customId]
+    )
+
+    const resultMessage = await interaction.followUp({
+      ...generateSMResultReport(result),
+      components: [
+        new ActionRowBuilder().setComponents(
+          new ButtonBuilder()
+            .setLabel('実行結果を削除')
+            .setCustomId('delete-result')
+            .setStyle(ButtonStyle.Danger)
+        ),
+      ],
+    })
+
+    await reply.delete()
+    const deleteButtonInteraction = await resultMessage.awaitMessageComponent({
+      componentType: ComponentType.Button,
+      time: 60000,
+      filter: interaction => interaction.user.id === message.author.id,
+    })
+
+    await resultMessage.delete()
+    await deleteButtonInteraction.reply({
+      content: '実行結果を削除しました。',
+      ephemeral: true,
+    })
+  } catch (error) {
+    if (error instanceof SMTimeoutError) {
+      await message.reply(
+        generateSMResultReport(
+          {
+            stdout: null,
+            stderr: 'SM worker timed-out',
+          },
+          message.guild.premiumTier
+        )
+      )
+    }
+
+    if (
+      error instanceof DiscordjsError &&
+      error.code === DiscordjsErrorCodes.InteractionCollectorError
+    )
+      return
+
+    throw error
+  }
 }
 
 client.on('messageCreate', message => {
@@ -64,12 +117,6 @@ client.on('messageCreate', message => {
   }
 
   const { code, language } = message.content.match(codeBlockRegExp).groups ?? {}
-  const firstLine = message.content.split('\n')[0]
-  const releaseChannel = firstLine.includes('beta')
-    ? releaseChannels.beta
-    : firstLine.includes('nightly')
-    ? releaseChannels.nightly
-    : releaseChannels.stable
 
   if (!supportLanguages.includes(language)) {
     message
@@ -83,54 +130,5 @@ client.on('messageCreate', message => {
     return
   }
 
-  const sendResult = async ({ stdout, stderr }) => {
-    const content = [
-      bold('Stdout'),
-      codeBlock('js', stdout || 'No outputs'),
-      bold('Stderr'),
-      codeBlock('js', stderr || 'No errors'),
-    ].join('\n')
-
-    if (content.length <= 2000) {
-      await sendMessage(message, {
-        content,
-      })
-    } else {
-      const files = []
-
-      if (stdout)
-        files.push(
-          new AttachmentBuilder(
-            calcUploadSizeLimit(stdout, message.guild.premiumTier)
-              ? Buffer.from('上限を超えているためアップロードできません')
-              : Buffer.from(stdout || 'No outputs')
-          )
-            .setName('stdout.txt')
-            .setDescription('標準出力')
-        )
-      if (stderr)
-        files.push(
-          new AttachmentBuilder(
-            calcUploadSizeLimit(stderr, message.guild.premiumTier)
-              ? Buffer.from('上限を超えているためアップロードできません')
-              : Buffer.from(stderr || 'No errors')
-          )
-            .setName('stderr.txt')
-            .setDescription('標準エラー出力')
-        )
-
-      await sendMessage(message, {
-        content: '出力結果が長いため、テキストファイルとして添付しました。',
-        files,
-      })
-    }
-  }
-
-  executeInSM(code, releaseChannel)
-    .then(it => sendResult(it))
-    .catch(error =>
-      error instanceof SMTimeoutError
-        ? message.reply('Timeout')
-        : console.error(error)
-    )
+  run(message, code).catch(console.error)
 })

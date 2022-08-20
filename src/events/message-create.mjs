@@ -93,6 +93,8 @@ const run = async (message, code) => {
           message.guild.premiumTier
         )
       )
+
+      return
     }
 
     if (

@@ -9,9 +9,8 @@ import { calcUploadSizeLimit } from '../../util/message.mjs'
  */
 export const generateSMResultReport = ({ stdout, stderr }, tier = 0) => {
   const report = [
-    bold('標準出力'),
+    bold('出力'),
     codeBlock('js', stdout?.replaceAll('`', '`\u200b') ?? '出力無し'),
-    '',
     bold('エラー出力'),
     codeBlock('js', stderr?.replaceAll('`', '`\u200b') ?? '出力無し'),
   ].join('\n')

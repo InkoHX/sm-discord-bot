@@ -1,5 +1,4 @@
 import fs from 'node:fs/promises'
-import { inspect } from 'node:util'
 import { parentPort, workerData } from 'node:worker_threads'
 
 import { WASI, init } from '@wasmer/wasi'

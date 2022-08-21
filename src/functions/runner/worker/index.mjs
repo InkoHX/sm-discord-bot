@@ -32,17 +32,11 @@ inputFile.seek(0)
 
 try {
   wasi.start()
-
-  parentPort.postMessage({
-    stdout: wasi.getStdoutString() || null,
-    stderr: wasi.getStderrString() || null,
-  })
 } catch (error) {
-  parentPort.postMessage({
-    stderr: inspect(error, {
-      colors: false,
-      depth: Infinity,
-    }),
-    stdout: null,
-  })
+  /** コードに誤りがあったときに関係のないエラーを吐くため無視 */
 }
+
+parentPort.postMessage({
+  stdout: wasi.getStdoutString() || null,
+  stderr: wasi.getStderrString() || null,
+})

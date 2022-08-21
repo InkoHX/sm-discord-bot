@@ -6,10 +6,6 @@ import { WASI, init } from '@wasmer/wasi'
 await init()
 
 const { channel, code } = workerData
-const preload = await fs.readFile(
-  new URL('./preload.js', import.meta.url),
-  'utf8'
-)
 const runtimeModule = await WebAssembly.compile(
   await fs.readFile(new URL(`./runtime/${channel}.wasm`, import.meta.url))
 )
@@ -25,8 +21,19 @@ const wasi = new WASI({
 
 await wasi.instantiate(runtimeModule, {})
 
+for (const file of await fs.readdir(new URL('./polyfill', import.meta.url))) {
+  const sourceCode = await fs.readFile(
+    new URL(`./polyfill/${file}`, import.meta.url),
+    'utf8'
+  )
+  const virtualFile = wasi.fs.open(`/${file}`, { write: true, create: true })
+
+  virtualFile.writeString(sourceCode)
+  virtualFile.seek(0)
+}
+
 const inputFile = wasi.fs.open('/input.js', { write: true, create: true })
-inputFile.writeString(preload + code)
+inputFile.writeString(code)
 inputFile.seek(0)
 
 try {

@@ -4,7 +4,7 @@ WORKDIR /workspace
 
 COPY ./package*.json ./
 
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 # Main
 FROM gcr.io/distroless/nodejs:18

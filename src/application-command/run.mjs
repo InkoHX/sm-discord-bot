@@ -6,6 +6,10 @@ import {
   SlashCommandBuilder,
   DiscordjsError,
   DiscordjsErrorCodes,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType,
+  codeBlock,
 } from 'discord.js'
 
 import {
@@ -14,6 +18,7 @@ import {
   SMTimeoutError,
 } from '../functions/index.mjs'
 import { releaseChannels } from '../runtime.mjs'
+import { escapeBackQuote } from '../util/message.mjs'
 
 const modal = new ModalBuilder()
   .setCustomId('code-input')
@@ -68,10 +73,25 @@ export const execute = async interaction => {
     try {
       const code = receiveModalInteraction.fields.getTextInputValue('code')
       const result = await executeInSM(code, channel)
+      const resultMessage = await receiveModalInteraction.followUp({
+        ...generateSMResultReport(result, interaction.guild?.premiumTier),
+        components: [
+          new ActionRowBuilder().setComponents(
+            new ButtonBuilder()
+              .setLabel('ソースコードを公開する')
+              .setCustomId('source-code')
+              .setStyle(ButtonStyle.Primary)
+          ),
+        ],
+      })
 
-      await receiveModalInteraction.followUp(
-        generateSMResultReport(result, interaction.guild?.premiumTier)
-      )
+      const sourceCodeButton = await resultMessage.awaitMessageComponent({
+        time: 60000,
+        componentType: ComponentType.Button,
+        filter: it => it.user.id === interaction.user.id,
+      })
+
+      await sourceCodeButton.reply(codeBlock('js', escapeBackQuote(code)))
     } catch (error) {
       if (error instanceof SMTimeoutError) {
         await receiveModalInteraction.followUp(

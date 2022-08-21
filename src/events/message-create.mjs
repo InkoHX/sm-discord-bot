@@ -6,6 +6,7 @@ import {
   bold,
   DiscordjsError,
   DiscordjsErrorCodes,
+  hyperlink,
 } from 'discord.js'
 
 import {
@@ -51,14 +52,14 @@ const run = async (message, code) => {
       filter: interaction => interaction.user.id === message.author.id,
     })
 
-    await interaction.deferReply()
+    await interaction.deferReply({ ephemeral: true })
 
     const result = await executeInSM(
       code,
       releaseChannels[interaction.customId]
     )
 
-    const resultMessage = await interaction.followUp({
+    const resultMessage = await message.reply({
       ...generateSMResultReport(result),
       components: [
         new ActionRowBuilder().setComponents(
@@ -69,6 +70,13 @@ const run = async (message, code) => {
         ),
       ],
     })
+
+    await interaction.followUp(
+      `実行結果は${hyperlink(
+        'こちら',
+        resultMessage.url
+      )}で確認することができます。`
+    )
 
     await reply.delete()
     const deleteButtonInteraction = await resultMessage.awaitMessageComponent({

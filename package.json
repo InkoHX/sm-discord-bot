@@ -2,6 +2,7 @@
   "name": "sm-discord-bot",
   "version": "1.0.0",
   "scripts": {
+    "prepare": "is-ci || husky install",
     "start": "node ./src/index.mjs",
     "lint": "eslint --ext=mjs,js ./src",
     "format": "prettier --write .",
@@ -17,6 +18,9 @@
     "eslint": "8.22.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-import": "2.26.0",
+    "husky": "^8.0.0",
+    "is-ci": "^3.0.1",
+    "lint-staged": "^13.0.3",
     "prettier": "2.7.1"
   }
 }

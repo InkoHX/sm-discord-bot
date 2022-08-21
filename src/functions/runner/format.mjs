@@ -1,6 +1,6 @@
 import { AttachmentBuilder, bold, codeBlock } from 'discord.js'
 
-import { calcUploadSizeLimit } from '../../util/message.mjs'
+import { calcUploadSizeLimit, escapeBackQuote } from '../../util/message.mjs'
 
 /**
  * @param {{ stdout: string | null; stderr: string | null; }} param0
@@ -10,9 +10,9 @@ import { calcUploadSizeLimit } from '../../util/message.mjs'
 export const generateSMResultReport = ({ stdout, stderr }, tier = 0) => {
   const report = [
     bold('出力'),
-    codeBlock('js', stdout?.replaceAll('`', '`\u200b') ?? '出力無し'),
+    codeBlock('js', stdout ? escapeBackQuote(stdout) : '出力無し'),
     bold('エラー出力'),
-    codeBlock('js', stderr?.replaceAll('`', '`\u200b') ?? '出力無し'),
+    codeBlock('js', stderr ? escapeBackQuote(stderr) : '出力無し'),
   ].join('\n')
 
   if (report.length <= 2000) return { content: report }

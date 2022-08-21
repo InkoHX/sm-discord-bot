@@ -20,3 +20,10 @@ export const calcUploadSizeLimit = (content, tier = 0) => {
       throw new Error('The tier must be a positive integer between 0 and 3.')
   }
 }
+
+/**
+ * コードブロック内に含まれるバッククォートをエスケープするための関数
+ * @param {string} str コードブロックに含む文字列
+ * @returns エスケープされた文字列
+ */
+export const escapeBackQuote = str => str.replaceAll('`', '`\u200b')

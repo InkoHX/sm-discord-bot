@@ -1,3 +1,5 @@
+import { on } from 'node:events'
+
 import { ApplicationCommandOptionType } from 'discord.js'
 
 import * as ApplicationCommands from '../application-command/index.mjs'
@@ -92,7 +94,9 @@ const handleChatInputCommandInteraction = async interaction => {
   }
 }
 
-client.on('interactionCreate', interaction => {
-  if (interaction.isChatInputCommand())
-    handleChatInputCommandInteraction(interaction).catch(console.error)
-})
+;(async () => {
+  for await (const [interaction] of on(client, 'interactionCreate')) {
+    if (interaction.isChatInputCommand())
+      handleChatInputCommandInteraction(interaction).catch(console.error)
+  }
+})().catch(console.error)

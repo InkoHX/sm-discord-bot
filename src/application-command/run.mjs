@@ -85,7 +85,9 @@ export const execute = async interaction => {
         components: [
           new ActionRowBuilder().setComponents(
             new ButtonBuilder()
-              .setLabel('ソースコードを公開する')
+              .setLabel(
+                ephemeral ? 'ソースコードを表示する' : 'ソースコードを公開する'
+              )
               .setCustomId('show-source-code')
               .setStyle(ButtonStyle.Primary)
           ),

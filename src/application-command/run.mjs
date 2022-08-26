@@ -49,6 +49,9 @@ export const data = new SlashCommandBuilder()
         }))
       )
   )
+  .addBooleanOption(it =>
+    it.setName('ephemeral').setDescription('実行結果を隠すか')
+  )
 
 /**
  *
@@ -60,41 +63,48 @@ export const execute = async interaction => {
    * Middleware
    */
 
-  return async ({ channel }) => {
+  return async ({ channel, ephemeral = false }) => {
     await interaction.showModal(modal)
 
-    const receiveModalInteraction = await interaction.awaitModalSubmit({
-      time: 60 * 60 * 1000,
-      filter: interaction => interaction.customId === modal.data.custom_id,
-    })
-
-    await receiveModalInteraction.deferReply()
+    let modalInteraction
 
     try {
-      const code = receiveModalInteraction.fields.getTextInputValue('code')
-      const result = await executeInSM(code, channel)
-      const resultMessage = await receiveModalInteraction.followUp({
-        ...generateSMResultReport(result, interaction.guild?.premiumTier),
+      modalInteraction = await interaction.awaitModalSubmit({
+        time: 60 * 60 * 1000,
+        filter: interaction => interaction.customId === modal.data.custom_id,
+      })
+
+      await modalInteraction.deferReply({ ephemeral })
+
+      const code = modalInteraction.fields.getTextInputValue('code')
+      const resultMessage = await modalInteraction.followUp({
+        ...generateSMResultReport(
+          await executeInSM(code, channel),
+          interaction.guild?.premiumTier
+        ),
         components: [
           new ActionRowBuilder().setComponents(
             new ButtonBuilder()
               .setLabel('ソースコードを公開する')
-              .setCustomId('source-code')
+              .setCustomId('show-source-code')
               .setStyle(ButtonStyle.Primary)
           ),
         ],
       })
 
-      const sourceCodeButton = await resultMessage.awaitMessageComponent({
+      const showSourceCodeButton = await resultMessage.awaitMessageComponent({
         time: 60000,
         componentType: ComponentType.Button,
         filter: it => it.user.id === interaction.user.id,
       })
 
-      await sourceCodeButton.reply(codeBlock('js', escapeBackQuote(code)))
+      await showSourceCodeButton.reply({
+        content: codeBlock('js', escapeBackQuote(code)),
+        ephemeral,
+      })
     } catch (error) {
       if (error instanceof SMTimeoutError) {
-        await receiveModalInteraction.followUp(
+        await modalInteraction.followUp(
           generateSMResultReport({
             stdout: null,
             stderr: 'SM worker timed-out',

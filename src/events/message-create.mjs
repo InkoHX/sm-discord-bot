@@ -24,10 +24,10 @@ const supportLanguages = ['js', 'javascript']
 
 ;(async () => {
   for await (const [message] of on(client, 'messageCreate')) {
-    if (message.system || message.author.bot) return
-    if (!message.content.toLowerCase().startsWith('>run')) return
+    if (message.system || message.author.bot) continue
+    if (!message.content.toLowerCase().startsWith('>run')) continue
     if (!codeBlockRegExp.test(message.content))
-      return message.reply(
+      await message.reply(
         '実行するコードはコードブロックとして送信してください。'
       )
 
@@ -35,7 +35,7 @@ const supportLanguages = ['js', 'javascript']
       message.content.match(codeBlockRegExp).groups ?? {}
 
     if (!supportLanguages.includes(language))
-      return message.reply(
+      await message.reply(
         `コードブロックの言語識別子は${supportLanguages
           .map(it => bold(it))
           .join('または')}である必要があります。`
@@ -129,7 +129,7 @@ const supportLanguages = ['js', 'javascript']
       )
         return
 
-      throw error
+      console.error(error)
     }
   }
 })().catch(console.error)

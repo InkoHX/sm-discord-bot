@@ -1,6 +1,6 @@
 {
   "name": "sm-discord-bot",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "scripts": {
     "prepare": "is-ci || husky install",
     "start": "node ./src/index.mjs",

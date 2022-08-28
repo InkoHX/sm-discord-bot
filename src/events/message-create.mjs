@@ -120,14 +120,14 @@ const supportLanguages = ['js', 'javascript']
           )
         )
 
-        return
+        continue
       }
 
       if (
         error instanceof DiscordjsError &&
         error.code === DiscordjsErrorCodes.InteractionCollectorError
       )
-        return
+        continue
 
       console.error(error)
     }

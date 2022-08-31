@@ -9,7 +9,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@wasmer/wasi": "1.0.2",
+    "@wasmer/wasi": "1.1.0",
     "dayjs": "1.11.5",
     "discord.js": "14.3.0",
     "node-fetch": "3.2.10"

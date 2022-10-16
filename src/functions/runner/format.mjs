@@ -15,7 +15,8 @@ export const generateSMResultReport = ({ stdout, stderr }, tier = 0) => {
     codeBlock('js', stderr ? escapeBackQuote(stderr) : '出力無し'),
   ].join('\n')
 
-  if (report.length <= 2000) return { content: report }
+  if (report.length <= 2000)
+    return { content: report, allowedMentions: { repliedUser: true } }
 
   const files = []
 

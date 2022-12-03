@@ -54,10 +54,18 @@ const run = async (message, code) => {
 
     await interaction.deferReply({ ephemeral: true })
 
-    const result = await executeInSM(
-      code,
-      releaseChannels[interaction.customId]
-    )
+    let result
+
+    try {
+      result = await executeInSM(code, releaseChannels[interaction.customId])
+    } catch (error) {
+      if (!(error instanceof SMTimeoutError)) throw error
+
+      result = {
+        stdout: null,
+        stderr: 'SM worker timed-out',
+      }
+    }
 
     const resultMessage = await message.reply({
       ...generateSMResultReport(result),
@@ -91,20 +99,6 @@ const run = async (message, code) => {
       ephemeral: true,
     })
   } catch (error) {
-    if (error instanceof SMTimeoutError) {
-      await message.reply(
-        generateSMResultReport(
-          {
-            stdout: null,
-            stderr: 'SM worker timed-out',
-          },
-          message.guild.premiumTier
-        )
-      )
-
-      return
-    }
-
     if (
       error instanceof DiscordjsError &&
       error.code === DiscordjsErrorCodes.InteractionCollectorError

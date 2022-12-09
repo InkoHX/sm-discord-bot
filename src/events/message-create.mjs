@@ -46,11 +46,17 @@ const run = async (message, code) => {
   })
 
   try {
-    const interaction = await reply.awaitMessageComponent({
-      componentType: ComponentType.Button,
-      time: 30000,
-      filter: interaction => interaction.user.id === message.author.id,
-    })
+    const interaction = await reply
+      .awaitMessageComponent({
+        componentType: ComponentType.Button,
+        time: 30000,
+        filter: interaction => interaction.user.id === message.author.id,
+      })
+      .catch(async err => {
+        if (error.code === DiscordjsErrorCodes.InteractionCollectorError)
+          await reply.delete()
+        throw err
+      })
 
     await interaction.deferReply({ ephemeral: true })
 

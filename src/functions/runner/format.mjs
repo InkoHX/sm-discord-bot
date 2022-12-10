@@ -23,9 +23,11 @@ export const generateSMResultReport = ({ stdout, stderr }, tier = 0) => {
   if (stdout)
     files.push(
       new AttachmentBuilder(
-        calcUploadSizeLimit(stdout, tier)
-          ? 'アップロードできる最大容量を超えました。'
-          : Buffer.from(stdout)
+        Buffer.from(
+          calcUploadSizeLimit(stdout, tier)
+            ? 'アップロードできる最大容量を超えました。'
+            : stdout
+        )
       )
         .setName('stdout.txt')
         .setDescription('標準出力')
@@ -33,9 +35,11 @@ export const generateSMResultReport = ({ stdout, stderr }, tier = 0) => {
   if (stderr)
     files.push(
       new AttachmentBuilder(
-        calcUploadSizeLimit(stderr, tier)
-          ? 'アップロードできる最大容量を超えました。'
-          : Buffer.from(stderr)
+        Buffer.from(
+          calcUploadSizeLimit(stderr, tier)
+            ? 'アップロードできる最大容量を超えました。'
+            : stderr
+        )
       )
         .setName('stderr.txt')
         .setDescription('標準エラー出力')

@@ -53,7 +53,7 @@ const run = async (message, code) => {
         filter: interaction => interaction.user.id === message.author.id,
       })
       .catch(async err => {
-        if (error.code === DiscordjsErrorCodes.InteractionCollectorError)
+        if (err.code === DiscordjsErrorCodes.InteractionCollectorError)
           await reply.delete()
         throw err
       })

@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@wasmer/wasi": "1.2.2",
-    "dayjs": "1.11.7",
+    "dayjs": "1.11.8",
     "discord.js": "^14.8.0",
     "node-fetch": "3.3.1"
   },

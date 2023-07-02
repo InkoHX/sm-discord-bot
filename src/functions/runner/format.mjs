@@ -8,6 +8,8 @@ import { calcUploadSizeLimit, escapeBackQuote } from '../../util/message.mjs'
  * @returns {import('discord.js').MessageOptions}
  */
 export const generateSMResultReport = ({ stdout, stderr }, tier = 0) => {
+  stdout = stdout.replace(/(^\n+|\n+$)/, '')
+  stderr = stderr.replace(/(^\n+|\n+$)/, '')
   const report = [
     bold('出力'),
     codeBlock('js', stdout ? escapeBackQuote(stdout) : '出力無し'),

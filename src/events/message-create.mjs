@@ -88,7 +88,7 @@ const run = async (message, code) => {
     await interaction.followUp(
       `実行結果は${hyperlink(
         'こちら',
-        resultMessage.url
+        `<${resultMessage.url}>`
       )}で確認することができます。`
     )
 

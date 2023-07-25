@@ -12,7 +12,7 @@
     "@wasmer/wasi": "1.2.2",
     "dayjs": "1.11.8",
     "discord.js": "^14.8.0",
-    "node-fetch": "3.3.1"
+    "node-fetch": "3.3.2"
   },
   "devDependencies": {
     "eslint": "8.36.0",

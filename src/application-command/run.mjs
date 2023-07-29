@@ -94,11 +94,19 @@ export const execute = async interaction => {
         ],
       })
 
-      const showSourceCodeButton = await resultMessage.awaitMessageComponent({
-        time: 60000,
-        componentType: ComponentType.Button,
-        filter: it => it.user.id === interaction.user.id,
-      })
+      const showSourceCodeButton = await resultMessage
+        .awaitMessageComponent({
+          time: 60000,
+          componentType: ComponentType.Button,
+          filter: it => it.user.id === interaction.user.id,
+        })
+        .catch(async e => {
+          if (e.code === DiscordjsErrorCodes.InteractionCollectorError) throw e
+          await resultMessage.edit({ components: [] })
+          return null
+        })
+
+      if (!showSourceCodeButton) return
 
       await showSourceCodeButton.reply({
         content: codeBlock('js', escapeBackQuote(code)),
@@ -115,12 +123,6 @@ export const execute = async interaction => {
 
         return
       }
-
-      if (
-        error instanceof DiscordjsError &&
-        error.code === DiscordjsErrorCodes.InteractionCollectorError
-      )
-        return
 
       throw error
     }

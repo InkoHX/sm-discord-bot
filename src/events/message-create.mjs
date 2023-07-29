@@ -93,11 +93,16 @@ const run = async (message, code) => {
     )
 
     await reply.delete()
-    const deleteButtonInteraction = await resultMessage.awaitMessageComponent({
-      componentType: ComponentType.Button,
-      time: 60000,
-      filter: interaction => interaction.user.id === message.author.id,
-    })
+    const deleteButtonInteraction = await resultMessage
+      .awaitMessageComponent({
+        componentType: ComponentType.Button,
+        time: 10000,
+        filter: interaction => interaction.user.id === message.author.id,
+      })
+      .catch(async e => {
+        if (e.code !== DiscordjsErrorCodes.InteractionCollectorError) throw e
+        await resultMessage.edit({ components: [] })
+      })
 
     await resultMessage.delete()
     await deleteButtonInteraction.reply({
@@ -105,12 +110,6 @@ const run = async (message, code) => {
       ephemeral: true,
     })
   } catch (error) {
-    if (
-      error instanceof DiscordjsError &&
-      error.code === DiscordjsErrorCodes.InteractionCollectorError
-    )
-      return
-
     throw error
   }
 }

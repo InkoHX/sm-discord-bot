@@ -4,7 +4,6 @@ import {
   TextInputBuilder,
   TextInputStyle,
   SlashCommandBuilder,
-  DiscordjsError,
   DiscordjsErrorCodes,
   ButtonBuilder,
   ButtonStyle,

@@ -4,7 +4,6 @@ import {
   ButtonStyle,
   ComponentType,
   bold,
-  DiscordjsError,
   DiscordjsErrorCodes,
   hyperlink,
 } from 'discord.js'

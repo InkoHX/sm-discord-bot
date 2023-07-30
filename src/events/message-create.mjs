@@ -95,13 +95,16 @@ const run = async (message, code) => {
   const deleteButtonInteraction = await resultMessage
     .awaitMessageComponent({
       componentType: ComponentType.Button,
-      time: 10000,
+      time: 60000,
       filter: interaction => interaction.user.id === message.author.id,
     })
     .catch(async e => {
       if (e.code !== DiscordjsErrorCodes.InteractionCollectorError) throw e
       await resultMessage.edit({ components: [] })
+      return null
     })
+
+  if (!deleteButtonInteraction) return
 
   await resultMessage.delete()
   await deleteButtonInteraction.reply({

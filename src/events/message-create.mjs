@@ -4,7 +4,6 @@ import {
   ButtonStyle,
   ComponentType,
   bold,
-  DiscordjsError,
   DiscordjsErrorCodes,
   hyperlink,
 } from 'discord.js'
@@ -45,74 +44,72 @@ const run = async (message, code) => {
     ],
   })
 
-  try {
-    const interaction = await reply
-      .awaitMessageComponent({
-        componentType: ComponentType.Button,
-        time: 30000,
-        filter: interaction => interaction.user.id === message.author.id,
-      })
-      .catch(async err => {
-        if (err.code === DiscordjsErrorCodes.InteractionCollectorError)
-          await reply.delete()
-        throw err
-      })
-
-    await interaction.deferReply({ ephemeral: true })
-
-    let result
-
-    try {
-      result = await executeInSM(code, releaseChannels[interaction.customId])
-    } catch (error) {
-      if (!(error instanceof SMTimeoutError)) throw error
-
-      result = {
-        stdout: null,
-        stderr: 'SM worker timed-out',
-      }
-    }
-
-    const resultMessage = await message.reply({
-      ...generateSMResultReport(result),
-      components: [
-        new ActionRowBuilder().setComponents(
-          new ButtonBuilder()
-            .setLabel('実行結果を削除')
-            .setCustomId('delete-result')
-            .setStyle(ButtonStyle.Danger)
-        ),
-      ],
+  const interaction = await reply
+    .awaitMessageComponent({
+      componentType: ComponentType.Button,
+      time: 30000,
+      filter: interaction => interaction.user.id === message.author.id,
+    })
+    .catch(async err => {
+      if (err.code === DiscordjsErrorCodes.InteractionCollectorError)
+        await reply.delete()
+      throw err
     })
 
-    await interaction.followUp(
-      `実行結果は${hyperlink(
-        'こちら',
-        `<${resultMessage.url}>`
-      )}で確認することができます。`
-    )
+  await interaction.deferReply({ ephemeral: true })
 
-    await reply.delete()
-    const deleteButtonInteraction = await resultMessage.awaitMessageComponent({
+  let result
+
+  try {
+    result = await executeInSM(code, releaseChannels[interaction.customId])
+  } catch (error) {
+    if (!(error instanceof SMTimeoutError)) throw error
+
+    result = {
+      stdout: null,
+      stderr: 'SM worker timed-out',
+    }
+  }
+
+  const resultMessage = await message.reply({
+    ...generateSMResultReport(result),
+    components: [
+      new ActionRowBuilder().setComponents(
+        new ButtonBuilder()
+          .setLabel('実行結果を削除')
+          .setCustomId('delete-result')
+          .setStyle(ButtonStyle.Danger)
+      ),
+    ],
+  })
+
+  await interaction.followUp(
+    `実行結果は${hyperlink(
+      'こちら',
+      `<${resultMessage.url}>`
+    )}で確認することができます。`
+  )
+
+  await reply.delete()
+  const deleteButtonInteraction = await resultMessage
+    .awaitMessageComponent({
       componentType: ComponentType.Button,
       time: 60000,
       filter: interaction => interaction.user.id === message.author.id,
     })
-
-    await resultMessage.delete()
-    await deleteButtonInteraction.reply({
-      content: '実行結果を削除しました。',
-      ephemeral: true,
+    .catch(async e => {
+      if (e.code !== DiscordjsErrorCodes.InteractionCollectorError) throw e
+      await resultMessage.edit({ components: [] })
+      return null
     })
-  } catch (error) {
-    if (
-      error instanceof DiscordjsError &&
-      error.code === DiscordjsErrorCodes.InteractionCollectorError
-    )
-      return
 
-    throw error
-  }
+  if (!deleteButtonInteraction) return
+
+  await resultMessage.delete()
+  await deleteButtonInteraction.reply({
+    content: '実行結果を削除しました。',
+    ephemeral: true,
+  })
 }
 
 client.on('messageCreate', message => {

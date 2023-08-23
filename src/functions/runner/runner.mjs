@@ -29,7 +29,7 @@ export const executeInSM = async (code, channel = releaseChannels.stable) => {
 
   const result = await Promise.race([
     once(worker, 'message').then(([it]) => it),
-    setTimeout(5000)
+    setTimeout(10000)
       .then(() => worker.terminate())
       .then(() => null),
   ])

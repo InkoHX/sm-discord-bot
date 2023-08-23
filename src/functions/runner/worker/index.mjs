@@ -12,7 +12,7 @@ const runtimeModule = await WebAssembly.compile(
 const wasi = new WASI({
   args: [
     '-f',
-    '/input.js',
+    '/start.js',
     '--selfhosted-xdr-path=/selfhosted.bin',
     '--selfhosted-xdr-mode=encode',
   ],

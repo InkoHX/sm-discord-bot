@@ -18,7 +18,7 @@ export class SMTimeoutError extends Error {
 /**
  * @param {string} code SpiderMonkeyで実行するJavaScript
  * @param {string} channel SpiderMonkeyのリリースチャンネル
- * @returns {Promise<{ stdout: string | null; stderr: string | null }>} コードの実行結果を返します。`null`を返せばタイムアウト
+ * @returns {Promise<{ fd: "stdout" | "stderr"; content: string }[]>} コードの実行結果を返します。
  */
 export const executeInSM = async (code, channel = releaseChannels.stable) => {
   const worker = new Worker(new URL(`./worker/index.mjs`, import.meta.url), {
@@ -27,14 +27,31 @@ export const executeInSM = async (code, channel = releaseChannels.stable) => {
 
   await once(worker, 'online')
 
-  const result = await Promise.race([
-    once(worker, 'message').then(([it]) => it),
+  /** @type {{ fd: 'stdout' | 'stderr'; content: string }[]} */
+  const out = []
+  /** @type {{ fd: 'stdout' | 'stderr'; content: string } | undefined} */
+  let current
+  worker.on('message', message => {
+    if (current?.fd === message.fd) {
+      current.content += message.content
+    } else {
+      if (current) out.push(current)
+      current = message
+    }
+    if (message.content.endsWith('\n')) {
+      out.push(current)
+      current = undefined
+    }
+  })
+
+  const exit = await Promise.race([
+    once(worker, 'exit'),
     setTimeout(10000)
       .then(() => worker.terminate())
       .then(() => null),
   ])
 
-  if (!result) throw new SMTimeoutError()
+  if (!exit) throw new SMTimeoutError()
 
-  return result
+  return out
 }

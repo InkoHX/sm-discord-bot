@@ -65,10 +65,7 @@ const run = async (message, code) => {
   } catch (error) {
     if (!(error instanceof SMTimeoutError)) throw error
 
-    result = {
-      stdout: null,
-      stderr: 'SM worker timed-out',
-    }
+    result = [{ fd: 'stderr', content: 'SM worker timed-out' }]
   }
 
   const resultMessage = await message.reply({

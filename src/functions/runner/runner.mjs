@@ -27,9 +27,15 @@ export const executeInSM = async (code, channel = releaseChannels.stable) => {
 
   await once(worker, 'online')
 
-  /** @type {{ fd: 'stdout' | 'stderr'; content: string }[]} */
+  /**
+   * 隣り合う2つの要素は，`fd`の値が異なるか，前の値が改行で終わっています．
+   * @type {{ fd: 'stdout' | 'stderr'; content: string }[]}
+   */
   const out = []
-  /** @type {{ fd: 'stdout' | 'stderr'; content: string } | undefined} */
+  /**
+   * 改行されるか，`fd`の値が変わるまでの出力をバッファリングします。
+   * @type {{ fd: 'stdout' | 'stderr'; content: string } | undefined}
+   */
   let current
   worker.on('message', message => {
     if (current?.fd === message.fd) {

@@ -1,4 +1,5 @@
-import { AttachmentBuilder, bold, codeBlock } from 'discord.js'
+import colors from 'colors'
+import { AttachmentBuilder, codeBlock } from 'discord.js'
 
 import { calcUploadSizeLimit, escapeBackQuote } from '../../util/message.mjs'
 
@@ -8,15 +9,14 @@ import { calcUploadSizeLimit, escapeBackQuote } from '../../util/message.mjs'
  * @returns {import('discord.js').MessageOptions}
  */
 export const generateSMResultReport = ({ stdout, stderr }, tier = 0) => {
-  stdout = (stdout ?? '').replace(/(^\n+|\n+$)/, '')
-  stderr = (stderr ?? '').replace(/(^\n+|\n+$)/, '')
-  const report = [
-    bold('出力'),
-    codeBlock('js', stdout ? escapeBackQuote(stdout) : '出力無し'),
-    bold('エラー出力'),
-    codeBlock('js', stderr ? escapeBackQuote(stderr) : '出力無し'),
-  ].join('\n')
+  /** @type {string[]} */
+  const out = []
+  if (stdout) out.push(stdout.replace(/(^\n+|\n+$)/, ''))
+  if (stderr) out.push(colors.red(stderr.replace(/(^\n+|\n+$)/, '')))
 
+  const report = out.length
+    ? codeBlock('ansi', escapeBackQuote(out.join('\n')))
+    : '出力無し'
   if (report.length <= 2000)
     return { content: report, allowedMentions: { repliedUser: true } }
 

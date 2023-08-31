@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@wasmer/wasi": "1.2.2",
+    "colors": "^1.4.0",
     "dayjs": "1.11.8",
     "discord.js": "^14.8.0",
     "node-fetch": "3.3.1"
   },
   "devDependencies": {
+    "@types/colors": "^1.2.1",
     "eslint": "8.36.0",
     "eslint-config-prettier": "8.7.0",
     "eslint-plugin-import": "2.27.5",

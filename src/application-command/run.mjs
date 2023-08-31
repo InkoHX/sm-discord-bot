@@ -40,7 +40,6 @@ export const data = new SlashCommandBuilder()
     it
       .setName('channel')
       .setDescription('リリースチャンネル')
-      .setRequired(true)
       .setChoices(
         ...Object.entries(releaseChannels).map(([name, value]) => ({
           name,
@@ -78,7 +77,7 @@ export const execute = async interaction => {
       const code = modalInteraction.fields.getTextInputValue('code')
       const resultMessage = await modalInteraction.followUp({
         ...generateSMResultReport(
-          await executeInSM(code, channel),
+          await executeInSM(code, channel ?? releaseChannels.stable),
           interaction.guild?.premiumTier
         ),
         components: [

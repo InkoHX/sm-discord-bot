@@ -11,7 +11,7 @@
   "dependencies": {
     "@wasmer/wasi": "1.2.2",
     "colors": "^1.4.0",
-    "dayjs": "1.11.8",
+    "dayjs": "1.11.9",
     "discord.js": "^14.8.0",
     "node-fetch": "3.3.1"
   },

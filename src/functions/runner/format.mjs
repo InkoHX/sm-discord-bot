@@ -4,24 +4,30 @@ import { AttachmentBuilder, codeBlock } from 'discord.js'
 import { calcUploadSizeLimit, escapeBackQuote } from '../../util/message.mjs'
 
 /**
- * @param {{ stdout: string | null; stderr: string | null; }} param0
+ * @param {{ fd: "stdout" | "stderr"; content: string }[]} out
  * @param {number} tier
  * @returns {import('discord.js').MessageOptions}
  */
-export const generateSMResultReport = ({ stdout, stderr }, tier = 0) => {
-  /** @type {string[]} */
-  const out = []
-  if (stdout) out.push(stdout.replace(/(^\n+|\n+$)/, ''))
-  if (stderr) out.push(colors.red(stderr.replace(/(^\n+|\n+$)/, '')))
+export const generateSMResultReport = (out, tier = 0) => {
+  const ansi = out
+    .map(({ fd, content }) => {
+      if (fd === 'stdout') return content
+      else if (content.endsWith('\n'))
+        return colors.red(content.slice(0, -1)) + '\n'
+      else return colors.red(content)
+    })
+    .join('')
 
-  const report = out.length
-    ? codeBlock('ansi', escapeBackQuote(out.join('\n')))
-    : '出力無し'
+  const report = ansi ? codeBlock('ansi', escapeBackQuote(ansi)) : '出力無し'
   if (report.length <= 2000)
     return { content: report, allowedMentions: { repliedUser: true } }
 
   const files = []
 
+  const stdout = out
+    .filter(({ fd }) => fd === 'stdout')
+    .map(({ content }) => content)
+    .join('')
   if (stdout)
     files.push(
       new AttachmentBuilder(
@@ -34,6 +40,10 @@ export const generateSMResultReport = ({ stdout, stderr }, tier = 0) => {
         .setName('stdout.txt')
         .setDescription('標準出力')
     )
+  const stderr = out
+    .filter(({ fd }) => fd === 'stderr')
+    .map(({ content }) => content)
+    .join('')
   if (stderr)
     files.push(
       new AttachmentBuilder(

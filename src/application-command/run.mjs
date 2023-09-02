@@ -114,10 +114,9 @@ export const execute = async interaction => {
     } catch (error) {
       if (error instanceof SMTimeoutError) {
         await modalInteraction.followUp(
-          generateSMResultReport({
-            stdout: null,
-            stderr: 'SM worker timed-out',
-          })
+          generateSMResultReport([
+            { fd: 'stderr', content: 'SM worker timed-out' },
+          ])
         )
 
         return

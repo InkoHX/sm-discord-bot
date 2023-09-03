@@ -82,7 +82,7 @@ jobs:
 
       - name: Get commit sha
         id: commit
-        run: echo "sha=$(${{ github.sha }} | cut -c 1-7)" >> $GITHUB_OUTPUT
+        run: echo "sha=$(echo ${{ github.sha }} | cut -c 1-7)" >> $GITHUB_OUTPUT
 
       - name: Docker meta
         id: meta

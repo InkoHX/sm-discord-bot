@@ -42,19 +42,20 @@ export const executeInSM = async (code, channel = releaseChannels.stable) => {
     if (current?.fd === message.fd) {
       current.buffers.push(message.buffer)
     } else {
-      if (current) out.push({
-        fd: current.fd,
-        content: Buffer.concat(current.buffers).toString()
-      })
+      if (current)
+        out.push({
+          fd: current.fd,
+          content: Buffer.concat(current.buffers).toString(),
+        })
       current = {
         fd: message.fd,
-        buffers: [message.buffer]
+        buffers: [message.buffer],
       }
     }
     if (current && Buffer.concat(current.buffers).toString().endsWith('\n')) {
       out.push({
         fd: current.fd,
-        content: Buffer.concat(current.buffers).toString()
+        content: Buffer.concat(current.buffers).toString(),
       })
       current = undefined
     }

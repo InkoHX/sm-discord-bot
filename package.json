@@ -10,7 +10,7 @@
   "dependencies": {
     "@bjorn3/browser_wasi_shim": "^0.2.14",
     "colors": "^1.4.0",
-    "dayjs": "1.11.8",
+    "dayjs": "1.11.9",
     "discord.js": "^14.8.0",
     "node-fetch": "3.3.1"
   },

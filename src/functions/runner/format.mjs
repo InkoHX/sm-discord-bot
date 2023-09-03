@@ -3,6 +3,9 @@ import { AttachmentBuilder, codeBlock } from 'discord.js'
 
 import { calcUploadSizeLimit, escapeBackQuote } from '../../util/message.mjs'
 
+// ANSI Escape による色付けを強制的に有効化
+colors.enable()
+
 /**
  * @param {{ fd: "stdout" | "stderr"; content: string }[]} out
  * @param {number} tier

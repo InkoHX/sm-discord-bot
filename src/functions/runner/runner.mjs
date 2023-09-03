@@ -18,7 +18,7 @@ export class SMTimeoutError extends Error {
 /**
  * @param {string} code SpiderMonkeyで実行するJavaScript
  * @param {string} channel SpiderMonkeyのリリースチャンネル
- * @returns {Promise<{ fd: "stdout" | "stderr"; buffer: Uint8Array }[]>} コードの実行結果を返します。
+ * @returns {Promise<{ fd: "stdout" | "stderr"; content: string }[]>} コードの実行結果を返します。
  */
 export const executeInSM = async (code, channel = releaseChannels.stable) => {
   const worker = new Worker(new URL(`./worker/index.mjs`, import.meta.url), {

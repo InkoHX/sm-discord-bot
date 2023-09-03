@@ -31,8 +31,7 @@ class PortStdio extends Fd {
     let nwritten = 0
     for (const iovec of iovs) {
       const buffer = view8.slice(iovec.buf, iovec.buf + iovec.buf_len)
-      const content = new TextDecoder().decode(buffer)
-      parentPort.postMessage({ fd: this.fd, content })
+      if (buffer.length) parentPort.postMessage({ fd: this.fd, buffer })
       nwritten += buffer.length
     }
     return { ret: 0, nwritten }
@@ -92,3 +91,4 @@ try {
 } catch (error) {
   /** コードに誤りがあったときに関係のないエラーを吐くため無視 */
 }
+

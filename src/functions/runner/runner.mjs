@@ -18,7 +18,7 @@ export class SMTimeoutError extends Error {
 /**
  * @param {string} code SpiderMonkeyで実行するJavaScript
  * @param {string} channel SpiderMonkeyのリリースチャンネル
- * @returns {Promise<{ fd: "stdout" | "stderr"; content: string }[]>} コードの実行結果を返します。
+ * @returns {Promise<{ fd: "stdout" | "stderr"; buffer: Uint8Array }[]>} コードの実行結果を返します。
  */
 export const executeInSM = async (code, channel = releaseChannels.stable) => {
   const worker = new Worker(new URL(`./worker/index.mjs`, import.meta.url), {
@@ -32,20 +32,30 @@ export const executeInSM = async (code, channel = releaseChannels.stable) => {
    * @type {{ fd: 'stdout' | 'stderr'; content: string }[]}
    */
   const out = []
+
   /**
    * 改行されるか，`fd`の値が変わるまでの出力をバッファリングします。
-   * @type {{ fd: 'stdout' | 'stderr'; content: string } | undefined}
+   * @type {{ fd: 'stdout' | 'stderr'; buffers: Uint8Array[] } | undefined}
    */
   let current
   worker.on('message', message => {
     if (current?.fd === message.fd) {
-      current.content += message.content
+      current.buffers.push(message.buffer)
     } else {
-      if (current) out.push(current)
-      current = message
+      if (current) out.push({
+        fd: current.fd,
+        content: Buffer.concat(current.buffers).toString()
+      })
+      current = {
+        fd: message.fd,
+        buffers: [message.buffer]
+      }
     }
-    if (message.content.endsWith('\n')) {
-      out.push(current)
+    if (current && Buffer.concat(current.buffers).toString().endsWith('\n')) {
+      out.push({
+        fd: current.fd,
+        content: Buffer.concat(current.buffers).toString()
+      })
       current = undefined
     }
   })

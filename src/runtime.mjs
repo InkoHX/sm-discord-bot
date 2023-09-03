@@ -1,7 +1,5 @@
 import { createWriteStream } from 'node:fs'
 
-import fetch from 'node-fetch'
-
 export const releaseChannels = {
   stable: 'mozilla-release',
   beta: 'mozilla-beta',

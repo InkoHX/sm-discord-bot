@@ -50,14 +50,17 @@ export const executeInSM = async (code, channel = releaseChannels.stable) => {
     }
   })
 
+  worker.on('error', console.error)
+
   const exit = await Promise.race([
     once(worker, 'exit'),
-    setTimeout(10000)
-      .then(() => worker.terminate())
-      .then(() => null),
+    setTimeout(10000).then(() => null),
   ])
 
-  if (!exit) throw new SMTimeoutError()
+  if (!exit) {
+    worker.terminate()
+    throw new SMTimeoutError()
+  }
 
   return out
 }

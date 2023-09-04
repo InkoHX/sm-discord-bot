@@ -5,7 +5,6 @@ import {
   ComponentType,
   bold,
   DiscordjsErrorCodes,
-  hyperlink,
 } from 'discord.js'
 
 import {
@@ -19,49 +18,18 @@ import { releaseChannels } from '../runtime.mjs'
 const codeBlockRegExp = /^`{3}(?<language>[a-z]+)\n(?<code>[\s\S]+)\n`{3}$/mu
 const supportLanguages = ['js', 'javascript']
 
+const channelRegExp = /^>run(?<channel>:stable|:beta|:nightly)?/mu
+
 /**
  * @param {import('discord.js').Message} message
  * @param {string} code
+ * @param {string | undefined} channel
  */
-const run = async (message, code) => {
-  const reply = await message.reply({
-    content: 'リリースチャンネルを選択してください',
-    components: [
-      new ActionRowBuilder().setComponents(
-        new ButtonBuilder()
-          .setCustomId('stable')
-          .setLabel('安定版')
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId('beta')
-          .setLabel('ベータ版')
-          .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder()
-          .setCustomId('nightly')
-          .setLabel('最新版')
-          .setStyle(ButtonStyle.Danger)
-      ),
-    ],
-  })
-
-  const interaction = await reply
-    .awaitMessageComponent({
-      componentType: ComponentType.Button,
-      time: 30000,
-      filter: interaction => interaction.user.id === message.author.id,
-    })
-    .catch(async err => {
-      if (err.code === DiscordjsErrorCodes.InteractionCollectorError)
-        await reply.delete()
-      throw err
-    })
-
-  await interaction.deferReply({ ephemeral: true })
-
+const run = async (message, code, channel) => {
   let result
 
   try {
-    result = await executeInSM(code, releaseChannels[interaction.customId])
+    result = await executeInSM(code, releaseChannels[channel ?? 'stable'])
   } catch (error) {
     if (!(error instanceof SMTimeoutError)) throw error
 
@@ -80,14 +48,6 @@ const run = async (message, code) => {
     ],
   })
 
-  await interaction.followUp(
-    `実行結果は${hyperlink(
-      'こちら',
-      `<${resultMessage.url}>`
-    )}で確認することができます。`
-  )
-
-  await reply.delete()
   const deleteButtonInteraction = await resultMessage
     .awaitMessageComponent({
       componentType: ComponentType.Button,
@@ -111,7 +71,7 @@ const run = async (message, code) => {
 
 client.on('messageCreate', message => {
   if (message.system || message.author.bot) return
-  if (!message.content.toLowerCase().startsWith('>run')) return
+  if (!channelRegExp.test(message.content)) return
   if (!codeBlockRegExp.test(message.content)) {
     message
       .reply('実行するコードはコードブロックとして送信してください。')
@@ -121,7 +81,6 @@ client.on('messageCreate', message => {
   }
 
   const { code, language } = message.content.match(codeBlockRegExp).groups ?? {}
-
   if (!supportLanguages.includes(language)) {
     message
       .reply(
@@ -133,6 +92,7 @@ client.on('messageCreate', message => {
 
     return
   }
+  const { channel } = message.content.match(channelRegExp).groups ?? {}
 
-  run(message, code).catch(console.error)
+  run(message, code, channel?.slice(1)).catch(console.error)
 })

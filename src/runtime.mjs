@@ -1,6 +1,5 @@
 import { createWriteStream } from 'node:fs'
-
-import fetch from 'node-fetch'
+import { WritableStream } from 'node:stream/web'
 
 export const releaseChannels = {
   stable: 'mozilla-release',
@@ -13,7 +12,7 @@ export const getRuntimePath = channel =>
 
 export const downloadRuntime = async channel => {
   const path = getRuntimePath(channel)
-  const dest = createWriteStream(path)
+  const file = createWriteStream(path)
 
   const response = await fetch(
     'https://mozilla-spidermonkey.github.io/sm-wasi-demo/data.json'
@@ -22,5 +21,7 @@ export const downloadRuntime = async channel => {
     .then(data => data.find(it => it.branch === channel).url)
     .then(url => fetch(url))
 
-  response.body.pipe(dest)
+  await response.body.pipeTo(
+    new WritableStream({ write: chunk => file.write(chunk) })
+  )
 }

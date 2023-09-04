@@ -94,7 +94,9 @@ export const execute = async interaction => {
         .awaitMessageComponent({
           time: 60000,
           componentType: ComponentType.Button,
-          filter: it => it.user.id === interaction.user.id && it.customId === button.data.custom_id,
+          filter: it =>
+            it.user.id === interaction.user.id &&
+            it.customId === button.data.custom_id,
         })
         .catch(async e => {
           if (e.code === DiscordjsErrorCodes.InteractionCollectorError) throw e

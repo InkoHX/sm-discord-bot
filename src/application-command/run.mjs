@@ -19,20 +19,6 @@ import {
 import { releaseChannels } from '../runtime.mjs'
 import { escapeBackQuote } from '../util/message.mjs'
 
-const modal = new ModalBuilder()
-  .setCustomId('code-input')
-  .setTitle('Run your code')
-  .setComponents(
-    new ActionRowBuilder().setComponents(
-      new TextInputBuilder()
-        .setCustomId('code')
-        .setLabel('コード')
-        .setPlaceholder('実行するJavaScript')
-        .setStyle(TextInputStyle.Paragraph)
-        .setRequired()
-    )
-  )
-
 export const data = new SlashCommandBuilder()
   .setName('run')
   .setDescription('JavaScriptをSpiderMonkeyに実行させます。')
@@ -63,6 +49,20 @@ export const execute = async interaction => {
    */
 
   return async ({ channel, ephemeral = false }) => {
+    const modal = new ModalBuilder()
+      .setCustomId(`code-input-${interaction.id}`)
+      .setTitle('Run your code')
+      .setComponents(
+        new ActionRowBuilder().setComponents(
+          new TextInputBuilder()
+            .setCustomId('code')
+            .setLabel('コード')
+            .setPlaceholder('実行するJavaScript')
+            .setStyle(TextInputStyle.Paragraph)
+            .setRequired()
+        )
+      )
+
     await interaction.showModal(modal)
 
     let modalInteraction
@@ -76,28 +76,25 @@ export const execute = async interaction => {
       await modalInteraction.deferReply({ ephemeral })
 
       const code = modalInteraction.fields.getTextInputValue('code')
+      const button = new ButtonBuilder()
+        .setLabel(
+          ephemeral ? 'ソースコードを表示する' : 'ソースコードを公開する'
+        )
+        .setCustomId(`show-source-code-${interaction.id}`)
+        .setStyle(ButtonStyle.Primary)
       const resultMessage = await modalInteraction.followUp({
         ...generateSMResultReport(
           await executeInSM(code, channel),
           interaction.guild?.premiumTier
         ),
-        components: [
-          new ActionRowBuilder().setComponents(
-            new ButtonBuilder()
-              .setLabel(
-                ephemeral ? 'ソースコードを表示する' : 'ソースコードを公開する'
-              )
-              .setCustomId('show-source-code')
-              .setStyle(ButtonStyle.Primary)
-          ),
-        ],
+        components: [new ActionRowBuilder().setComponents(button)],
       })
 
       const showSourceCodeButton = await resultMessage
         .awaitMessageComponent({
           time: 60000,
           componentType: ComponentType.Button,
-          filter: it => it.user.id === interaction.user.id,
+          filter: it => it.customId === button.data.custom_id,
         })
         .catch(async e => {
           if (e.code === DiscordjsErrorCodes.InteractionCollectorError) throw e

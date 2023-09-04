@@ -48,7 +48,9 @@ const run = async (message, code) => {
     .awaitMessageComponent({
       componentType: ComponentType.Button,
       time: 30000,
-      filter: interaction => interaction.user.id === message.author.id,
+      filter: interaction =>
+        interaction.user.id === message.author.id &&
+        interaction.message.id === reply.id,
     })
     .catch(async err => {
       if (err.code === DiscordjsErrorCodes.InteractionCollectorError)
@@ -92,7 +94,9 @@ const run = async (message, code) => {
     .awaitMessageComponent({
       componentType: ComponentType.Button,
       time: 60000,
-      filter: interaction => interaction.user.id === message.author.id,
+      filter: interaction =>
+        interaction.user.id === message.author.id &&
+        interaction.message.id === resultMessage.id,
     })
     .catch(async e => {
       if (e.code !== DiscordjsErrorCodes.InteractionCollectorError) throw e

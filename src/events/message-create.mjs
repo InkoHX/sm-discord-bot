@@ -78,6 +78,7 @@ const run = async (message, code) => {
           .setStyle(ButtonStyle.Danger)
       ),
     ],
+    failIfNotExists: false,
   })
 
   await interaction.followUp(

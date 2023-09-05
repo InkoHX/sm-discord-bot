@@ -16,7 +16,7 @@ import {
 import { client } from '../index.mjs'
 import { releaseChannels } from '../runtime.mjs'
 
-const codeBlockRegExp = /^`{3}(?<language>[a-z]+)\n(?<code>[\s\S]+)\n`{3}$/mu
+const codeBlockRegExp = /`{3}(?<language>[a-z]+)\n(?<code>[\s\S]+)\n`{3}/u
 const supportLanguages = ['js', 'javascript']
 
 /**

@@ -8,13 +8,13 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@bjorn3/browser_wasi_shim": "^0.2.14",
-    "colors": "^1.4.0",
+    "@bjorn3/browser_wasi_shim": "0.2.14",
+    "colors": "1.4.0",
     "dayjs": "1.11.9",
-    "discord.js": "^14.8.0"
+    "discord.js": "14.13.0"
   },
   "devDependencies": {
-    "@types/colors": "^1.2.1",
+    "@types/colors": "1.2.1",
     "eslint": "8.48.0",
     "eslint-config-prettier": "9.0.0",
     "eslint-plugin-import": "2.28.1",

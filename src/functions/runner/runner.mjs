@@ -81,10 +81,9 @@ export const executeInSM = async (code, channel = releaseChannels.stable) => {
     })
   if (!exit)
     out.push({
-      fd: "stderr",
-      content: "Error: SM worker timed-out",
+      fd: 'stderr',
+      content: 'Error: SM worker timed-out',
     })
-
 
   return out
 }

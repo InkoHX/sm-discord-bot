@@ -1,4 +1,4 @@
-FROM node:18 AS deps
+FROM node:20 AS deps
 
 WORKDIR /workspace
 
@@ -7,7 +7,7 @@ COPY ./package*.json ./
 RUN npm ci --omit=dev --ignore-scripts
 
 # Main
-FROM gcr.io/distroless/nodejs:18
+FROM gcr.io/distroless/nodejs20-debian11:nonroot
 
 WORKDIR /app
 

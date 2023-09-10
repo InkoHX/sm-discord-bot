@@ -11,7 +11,7 @@ FROM gcr.io/distroless/nodejs20-debian11:nonroot
 
 WORKDIR /app
 
-COPY ./src ./src
+COPY --chown=nonroot:nonroot ./src ./src
 COPY --from=deps /workspace/node_modules ./node_modules
 
 CMD [ "./src/index.mjs" ]

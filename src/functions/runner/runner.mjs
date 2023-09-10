@@ -63,15 +63,27 @@ export const executeInSM = async (code, channel = releaseChannels.stable) => {
 
   worker.on('error', console.error)
 
+  const exitPromise = once(worker, 'exit')
+
   const exit = await Promise.race([
-    once(worker, 'exit'),
+    exitPromise,
     setTimeout(10000).then(() => null),
   ])
 
   if (!exit) {
     worker.terminate()
-    throw new SMTimeoutError()
+    await exitPromise
   }
+  if (current)
+    out.push({
+      fd: current.fd,
+      content: Buffer.concat(current.buffers).toString(),
+    })
+  if (!exit)
+    out.push({
+      fd: 'stderr',
+      content: 'Error: SM worker timed-out',
+    })
 
   return out
 }

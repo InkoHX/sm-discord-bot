@@ -41,10 +41,12 @@ class PortStdio extends Fd {
 const { channel, code } = workerData
 
 const args = [
-  '-f',
-  '/start.js',
+  // この順番じゃないと想定された動作にならない
   '--selfhosted-xdr-path=/selfhosted.bin',
   '--selfhosted-xdr-mode=encode',
+  '--disable-tosource',
+  '-f',
+  '/start.js',
 ]
 const env = []
 const fds = [

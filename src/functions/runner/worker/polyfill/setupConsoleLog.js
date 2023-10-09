@@ -1644,9 +1644,27 @@ const createUtilFormat = (
     try {
       output = formatter(ctx, value, recurseTimes)
       for (i = 0; i < keys.length; i++) {
+        const key = keys[i]
+        try {
+          if (!getProxyDetails(value)) ObjectGetOwnPropertyDescriptor(value, key)
+        } catch (e) {
+          if (isNativeError(e) && e.name === 'ReferenceError') {
+            ArrayPrototypePush(
+              output,
+              `${ctx.stylize(
+                RegExpPrototypeExec(keyStrRegExp, key) !== null
+                  ? key
+                  : strEscape(key),
+                'name'
+              )}: ${ctx.stylize('<uninitialized>', 'special')}`
+            )
+            continue
+          }
+          throw e
+        }
         ArrayPrototypePush(
           output,
-          formatProperty(ctx, value, recurseTimes, keys[i], extrasType)
+          formatProperty(ctx, value, recurseTimes, key, extrasType)
         )
       }
       if (protoProps !== undefined) {
@@ -1658,7 +1676,14 @@ const createUtilFormat = (
         0,
         -1
       )
-      return handleMaxCallStackSize(ctx, err, constructorName, indentationLvl)
+      const errStr = handleMaxCallStackSize(
+        ctx,
+        err,
+        constructorName,
+        indentationLvl
+      )
+      if (errStr) return errStr
+      throw err
     }
     if (ctx.circular !== undefined) {
       const index = ctx.circular.get(value)

@@ -1,4 +1,4 @@
-FROM node:20 AS deps
+FROM node:21 AS deps
 
 WORKDIR /workspace
 

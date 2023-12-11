@@ -8,7 +8,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@bjorn3/browser_wasi_shim": "0.2.15",
+    "@bjorn3/browser_wasi_shim": "0.2.16",
     "colors": "1.4.0",
     "dayjs": "1.11.9",
     "discord.js": "14.13.0"

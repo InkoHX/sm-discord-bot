@@ -14,7 +14,7 @@ export const client = new Client({
     IntentsBitField.Flags.GuildMessages |
     IntentsBitField.Flags.MessageContent,
   presence: {
-    activities: [{ type: ActivityType.Streaming, name: 'SpiderMonkey shell' }],
+    activities: [{ type: ActivityType.Custom, name: 'SpiderMonkey shell' }],
   },
 })
 

@@ -99,7 +99,7 @@ export const execute = async interaction => {
             it.customId === button.data.custom_id,
         })
         .catch(async e => {
-          if (e.code === DiscordjsErrorCodes.InteractionCollectorError) throw e
+          if (e.code !== DiscordjsErrorCodes.InteractionCollectorError) throw e
           await resultMessage.edit({ components: [] })
           return null
         })
